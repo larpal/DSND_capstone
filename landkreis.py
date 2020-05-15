@@ -3,19 +3,23 @@ import pandas as pd
 import altair as alt
 import data_wrangling as data
 import streamlit as st
+import numpy as np
 
 def main():
-
+    """
     df_ctr_cum = data.df_ctr_cum
     df_ctr = data.df_ctr
     df_sta = data.df_sta
-    df_lkr = data.df_lkr
+    """
     df_lkr_roll = data.df_lkr_roll
+    df_lkr = data.df_lkr
+
+    df_loc = data.df_cases_loc_long
+
     _width = data._width
     _height = data._height
 
     lkr_tp = tuple(sorted(list(df_lkr['Landkreis'].unique())))
-    print(lkr_tp)
     lkr_sel = st.sidebar.multiselect('Choose Districts',lkr_tp,['SK Hamburg'])
 
     st.write('Total Cases')
@@ -41,3 +45,7 @@ def main():
                    tooltip = ['Landkreis','Meldedatum','Number'])
     c4 = (c2+c3).properties(width=800, height=400, title='Rolling 7-day sum of cases per 100k')
     st.write(c4)
+
+
+    #st.write(df_loc[['lat','lon']].head(1000))
+    #st.map(df_loc[['lat','lon']].head(10000))

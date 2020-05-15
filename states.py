@@ -11,13 +11,18 @@ def main():
     #df_ctr_cum = data.df_ctr_cum
     #df_ctr = data.df_ctr
     df_sta = data.df_sta
+    df_sta_cum = data.df_sta_cum
     #df_cases = data.df_cases
     _width = data._width
     _height = data._height
 
     # Site Navigation
     states_tp = tuple(sorted(list(df_sta['Bundesland'].unique())))
-    states_sel = st.sidebar.multiselect('Choose State',states_tp, ['Bayern'])
+    st.sidebar.markdown('**  Cumulative cases over time **')
+    state_sel_cum = st.sidebar.selectbox('Choose State',states_tp, 0)
+    st.sidebar.markdown('**  Comparison of daily cases **')
+    states_sel = st.sidebar.multiselect('Choose States',states_tp, ['Bayern'])
+
 
     #
     tr_opt1,tr_opt2 = 'Line Plot', 'Stacked Bar Plot'
@@ -38,7 +43,19 @@ def main():
                    tooltip=['Cases','variable'])\
             .properties(width=800, height=600, title='Total Cases by State')
     st.write(c5)
-    
+
+    # cumulative cases for specific state
+
+    c2313 = alt.Chart(data.longify_df_cum(df_sta_cum, 'Bundesland',state_sel_cum))\
+            .mark_area(point=True, opacity=0.5)\
+            .encode(x=alt.X('monthdate(Meldedatum):O', title='Date'),\
+                    y=alt.Y('mean(Number):Q',\
+                            title='Cumulative Cases',\
+                            stack=None),\
+                    color='category',\
+                    tooltip=['monthdate(Meldedatum)','category','Number'])\
+            .properties(width=800, height=400, title='Number of Cases in '+state_sel_cum)
+    st.write(c2313)
     # plot the current daily new cases as a stacked bar Plot
     # or a line plot
     if toggle_radio == tr_opt1:

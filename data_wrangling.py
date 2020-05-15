@@ -20,11 +20,42 @@ df_ctr = read_data_fix_date('data_ctr_long.csv')
 df_ctr_cum = read_data_fix_date('data_ctr_cum_long.csv')
 # state data
 df_sta = read_data_fix_date('data_sta_long.csv')
+df_sta_cum = read_data_fix_date('data_sta_cum_long.csv')
+# district data
+df_lkr = read_data_fix_date('data_lkr_long.csv')
+df_lkr_cum = read_data_fix_date('data_lkr_cum_long.csv')
+df_cases_rolling = read_data_fix_date('data_cases_rolling.csv')
+
+# location data
+df_cases_loc_long = read_data_fix_date('data_loc_long.csv')
+
+df_lkr_roll = \
+        pd.melt(df_cases_rolling, id_vars=['Meldedatum', 'Landkreis'],\
+                value_vars = ['AnzahlFall100k'],\
+                var_name = 'category',\
+                value_name = 'Number')
+df_lkr_roll
+
+def longify_df_cum(df_cum,cat,sel):
+    """ transform data frame with cumulative data for states or districts
+        into long format for a specific state/district.
+
+        Args:
+        df_cum: either df_sta_cum or df_lkr_cum
+        cat (str): 'Bundesland' or 'Landkreis'
+        sel (str): specific Bundesland or Landkreis
+    """
+    tmp = df_cum.loc[df_cum[cat]==sel].drop(columns=[cat])
+    tmp = pd.melt(tmp, id_vars = ['Meldedatum'], var_name= 'category',\
+        value_vars = ['AnzahlFall','AnzahlTodesfall','AnzahlGenesen'],\
+       value_name = 'Number')
+    return tmp
+
 """
 df_cases = read_data_fix_date('data_cases.csv')
 df_deaths = read_data_fix_date('data_deaths.csv')
 df_recovered = read_data_fix_date('data_recovered.csv')
-df_cases_rolling = read_data_fix_date('data_cases_rolling.csv')
+
 
 # Country level data
 df_ctr_cum = np.cumsum(df_cases.groupby(['Meldedatum'])\
