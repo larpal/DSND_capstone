@@ -93,13 +93,14 @@ To run the app, simply use `streamlit run app.py`. Note that the ETL pipeline is
 ## Data Processing
 The data preprocessing is done in the `etl` module via the `etl_main` function. The code contained can be explored in an easier way using the notebook `ETL.ipynb` which contains the same code broken into smaller pieces.
 
+## Conclusion
+In this project, I created a dashboard to visualize the current Covid-19 situation in Germany. I found that Streamlit is very well suited for such dashboards and I believe that my app successfully achieves the tasks I planned to do. Further, Altair can be used to create beautiful and interactive charts.
 
-
-## Future Work
-There are I am planning to improve, such as:
+Once the time allows, there are I am planning to improve, such as:
 - deploy the app on Heroku
-- Add more interactive information to the map
-- Refactor the ETL pipeline into pieces that are easier to digest.
+- add more interactive information to the map
+- refactor the ETL pipeline into pieces that are easier to digest
+- speed up the ETL pipeline
 
 ## Licensing, Authors, and Acknowledgements
-I am grateful to the providors of the data sets mentioned above. 
+I am grateful to the providors of the data sets mentioned above.
