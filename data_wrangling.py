@@ -8,9 +8,11 @@ _width = 800
 _height = 500
 
 # read data
-# qucik stats
+# quick stats
 df_stats = pd.read_csv('data_stats.csv')
+df_death_stats = pd.read_csv('data_death_stats.csv')
 
+@st.cache
 def read_data_fix_date(file_name):
     df = pd.read_csv(file_name)
     df['Meldedatum'] = pd.to_datetime(df['Meldedatum'], format='%Y/%m/%d')
