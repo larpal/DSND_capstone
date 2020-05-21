@@ -6,6 +6,7 @@ import data_wrangling as data
 str_c = data.str_c
 str_d = data.str_d
 str_r = data.str_r
+str_dstrct = data.str_dstrct
 
 @st.cache
 def etl_main():
@@ -15,9 +16,10 @@ def etl_main():
 
     df_rki.rename(columns={'AnzahlFall': str_c,\
                             'AnzahlTodesfall':str_d,\
-                            'AnzahlGenesen':str_r},\
+                            'AnzahlGenesen':str_r,\
+                            'Landkreis':str_dstrct},\
                             inplace = True)
-    st.write(df_rki)
+
     # compute basic stats
     n_cases = df_rki.loc[df_rki['NeuerFall'].isin([0,1])][str_c].sum()
     n_cases_new = \
@@ -64,7 +66,7 @@ def etl_main():
 
     # merge Berlin cases since we currently don't have population data for the individual districts
     df_cases.loc[df_cases['IdLandkreis'].isin(np.arange(11000,11013,1)),'IdLandkreis'] = 11000
-    df_cases.loc[df_cases['IdLandkreis'].isin(np.arange(11000,11013,1)),'Landkreis'] = 'SK Berlin'
+    df_cases.loc[df_cases['IdLandkreis'].isin(np.arange(11000,11013,1)),str_dstrct] = 'SK Berlin'
     df_cases.drop(columns = ['Datenstand'], inplace=True)
 
     # one-hot encode age groups
@@ -113,13 +115,13 @@ def etl_main():
     df_cases_roll.loc[df_cases_roll['IdLandkreis']==5558].tail(25)
 
     # set district ids to district names
-    df_cases_roll['Landkreis'] = df_cases_roll['IdLandkreis']
+    df_cases_roll[str_dstrct] = df_cases_roll['IdLandkreis']
     # make sure that the district name matches the original one from the cases
     # data frame
     # (this step is a bit slow, could likely be improved)
-    df_cases_roll['Landkreis'] = \
-     df_cases_roll['Landkreis'].apply(lambda x: \
-        df_cases.loc[df_cases['IdLandkreis'] == x]['Landkreis'].iloc[0])
+    df_cases_roll[str_dstrct] = \
+     df_cases_roll[str_dstrct].apply(lambda x: \
+        df_cases.loc[df_cases['IdLandkreis'] == x][str_dstrct].iloc[0])
     df_cases_roll.rename(columns=\
         {"AnzahlFall":"7d_AnzahlFall",'AnzahlFall100k':'7d_AnzahlFall100k'})
 
@@ -172,19 +174,19 @@ def etl_main():
             df_sta_cum.loc[df_sta_cum['Bundesland']==state,col] = \
             np.cumsum(df_sta_cum.loc[df_sta_cum['Bundesland']==state,col])
     """Districts"""
-    df_lkr = pd.concat([df_cases.groupby(['Meldedatum','Landkreis']).sum().\
-            reset_index()[['Meldedatum','Landkreis',str_c]],\
-        df_deaths.groupby(['Meldedatum','Landkreis']).sum().\
-            reset_index()[['Meldedatum','Landkreis',str_d]],\
-        df_recovered.groupby(['Meldedatum','Landkreis']).sum().\
-            reset_index()[['Meldedatum','Landkreis',str_r]]])
-    df_lkr = df_lkr.fillna(0).groupby(['Meldedatum','Landkreis']).sum().reset_index()
+    df_lkr = pd.concat([df_cases.groupby(['Meldedatum',str_dstrct]).sum().\
+            reset_index()[['Meldedatum',str_dstrct,str_c]],\
+        df_deaths.groupby(['Meldedatum',str_dstrct]).sum().\
+            reset_index()[['Meldedatum',str_dstrct,str_d]],\
+        df_recovered.groupby(['Meldedatum',str_dstrct]).sum().\
+            reset_index()[['Meldedatum',str_dstrct,str_r]]])
+    df_lkr = df_lkr.fillna(0).groupby(['Meldedatum',str_dstrct]).sum().reset_index()
     df_lkr[[str_c,str_d,str_r]] = df_lkr[[str_c,str_d,str_r]].astype('int64')
 
     df_lkr_cum = df_lkr.copy()
-    for el in list(df_lkr['Landkreis'].unique()):
+    for el in list(df_lkr[str_dstrct].unique()):
         for col in [str_c,str_d,str_r]:
-            df_lkr_cum.loc[df_lkr_cum['Landkreis']==el,col] = np.cumsum(df_lkr_cum.loc[df_lkr_cum['Landkreis']==el,col])
+            df_lkr_cum.loc[df_lkr_cum[str_dstrct]==el,col] = np.cumsum(df_lkr_cum.loc[df_lkr_cum[str_dstrct]==el,col])
     df_lkr_cum
 
     """

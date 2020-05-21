@@ -10,6 +10,7 @@ _height = 500
 str_c = 'cases'
 str_d = 'deaths'
 str_r = 'recovered'
+str_dstrct = 'district'
 """
 # read data
 # quick stats

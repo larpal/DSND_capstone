@@ -8,6 +8,7 @@ import numpy as np
 str_c = data.str_c
 str_d = data.str_d
 str_r = data.str_r
+str_dstrct = data.str_dstrct
 
 def main(df_lkr, df_cases_rolling, df_loc):
 
@@ -16,7 +17,7 @@ def main(df_lkr, df_cases_rolling, df_loc):
     _height = data._height
 
     df_lkr_roll = \
-            pd.melt(df_cases_rolling, id_vars=['Meldedatum', 'Landkreis'],\
+            pd.melt(df_cases_rolling, id_vars=['Meldedatum', str_dstrct],\
                     value_vars = ['AnzahlFall100k'],\
                     var_name = 'category',\
                     value_name = 'cases')
@@ -25,7 +26,7 @@ def main(df_lkr, df_cases_rolling, df_loc):
 
 
 
-    lkr_tp = tuple(sorted(list(df_lkr['Landkreis'].unique())))
+    lkr_tp = tuple(sorted(list(df_lkr[str_dstrct].unique())))
     lkr_sel = st.sidebar.multiselect('Choose Districts',lkr_tp,['SK Hamburg'])
 
     # chart displaying rolling sum of cases in the past week
@@ -39,24 +40,24 @@ def main(df_lkr, df_cases_rolling, df_loc):
                                             opacity=alt.value(0.2),
                                             color = alt.value('red'))
     chart_cases_per_100k = \
-    alt.Chart(df_lkr_roll.loc[df_lkr_roll['Landkreis'].isin(lkr_sel)])\
+    alt.Chart(df_lkr_roll.loc[df_lkr_roll[str_dstrct].isin(lkr_sel)])\
             .mark_line(point=True)\
             .encode(x=alt.X('monthdate(Meldedatum):O', title='Date'),\
                     y=alt.Y('mean(cases):Q', title='Cases'),\
-                    color='Landkreis',\
-                   tooltip = ['Landkreis','Meldedatum','cases'])
+                    color=str_dstrct,\
+                   tooltip = [str_dstrct,'Meldedatum','cases'])
     chart_100k = (chart_cases_per_100k+chart_line).properties\
     (width=800, height=400, title='Rolling 7-day sum of cases per 100k')
     st.write(chart_100k)
 
     st.markdown('### Daily cases since begin of the pandemic:')
     st.markdown('*Bars are stacked on top of each other.*')
-    c = alt.Chart(df_lkr.loc[df_lkr['Landkreis'].isin(lkr_sel)])\
+    c = alt.Chart(df_lkr.loc[df_lkr[str_dstrct].isin(lkr_sel)])\
         .mark_bar(point=True)\
         .encode(x=alt.X('monthdate(Meldedatum):O', title='Date'),\
                 y=alt.Y('mean('+str_c+'):Q', title='Cumulative Cases'),\
-                color='Landkreis',\
-                tooltip=['Landkreis',str_c])\
+                color=str_dstrct,\
+                tooltip=[str_dstrct,str_c])\
         .properties(width=800, height=400, title='Number of Cases')\
         .interactive()
     st.write(c)

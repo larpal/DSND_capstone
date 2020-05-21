@@ -55,7 +55,6 @@ def main(df_sta, df_sta_cum):
         .sort_values(by=str_c, ascending=False).reset_index()
     df_sta_tot = df_sta_tot.melt(id_vars='Bundesland', \
                     value_vars = [str_c, str_d], value_name='Cases')
-    st.write(df_sta_tot)
     # plot
     chart_states_tot = alt.Chart(df_sta_tot)\
             .mark_bar()\
@@ -95,7 +94,7 @@ def main(df_sta, df_sta_cum):
                     y=alt.Y('mean('+str_c+'):Q', title='Cumulative Cases'),\
                     color='Bundesland',\
                     tooltip=['Bundesland',str_c])\
-            .properties(width=800, height=400, title='Reported cases per day')\
+                .properties(width=800, height=400, title='Reported cases per day')\
             .interactive()
     elif toggle_radio == tr_opt2:
         #st.text('Numbers stacked on top.')
