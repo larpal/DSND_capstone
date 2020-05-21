@@ -30,9 +30,9 @@ My dashboard consists of four pages containing several different types of visual
     inhabitants
   * Stacked bar plot showing the daily number of reported cases
 
-This project was done within the framework of the [Data Science Nanodegree](#https://www.udacity.com/course/data-scientist-nanodegree--nd025) program offered by Udacity.
+This project was done within the framework of the [Data Science Nanodegree](https://www.udacity.com/course/data-scientist-nanodegree--nd025) program offered by Udacity.
 ## Data Sources
-The main data source for the dashboard is the Covid-19 data ([link](#https://www.arcgis.com/home/item.html?id=f10774f1c63e40168479a1feb6c7ca74)) provided by the
+The main data source for the dashboard is the Covid-19 data ([link](https://www.arcgis.com/home/item.html?id=f10774f1c63e40168479a1feb6c7ca74)) provided by the
 Robert-Koch-Institute. The data set includes information about each Covid-19
 case officially reported in Germany, such as:
 * date of reporting
@@ -43,7 +43,7 @@ case officially reported in Germany, such as:
 * sex of infected person
 * age (six different groups)
 
-In addition, I used a data set from *DESTATIS* [(link)](#https://www.destatis.de/DE/Themen/Laender-Regionen/Regionales/Gemeindeverzeichnis/Administrativ/04-kreise.html) with information
+In addition, I used a data set from *DESTATIS* [(link)](https://www.destatis.de/DE/Themen/Laender-Regionen/Regionales/Gemeindeverzeichnis/Administrativ/04-kreise.html) with information
 about each district in Germany, such as
 * district ID
 * district name
@@ -55,18 +55,18 @@ figure to decided about social distancing measures is the number of infections
 per 100.000 people per week. I combined the above to data sets to compute these
 metrics.
 
-Last, I used [this](#https://public.opendatasoft.com/explore/dataset/landkreise-in-germany/export/)
+Last, I used [this](https://public.opendatasoft.com/explore/dataset/landkreise-in-germany/export/)
 data set containing location data for all districts in Germany. From this
 data set, I pulled the coordinates of each district in Germany to show
 the number of cases per 100k inhabitants on a map.
 
 ## Libraries
 The dashboard is built using the following libraries:
-- [Streamlit](#https://www.streamlit.io): to run the app, use `streamlit run app.py`
-- [Pandas](#https://pandas.pydata.org)
-- [Numpy](#https://numpy.org)
-- [xlrd](#https://xlrd.readthedocs.io/en/latest/): while this is not imported implicitely, it needs to be installed to read an `xlsx` file using `pd.read_excel`.
-- [Altair](#https://altair-viz.github.io): all charts (except for the geographic map) displayed in the dashboard are built using Altair.
+- [Streamlit](https://www.streamlit.io): to run the app, use `streamlit run app.py`
+- [Pandas](https://pandas.pydata.org)
+- [Numpy](https://numpy.org)
+- [xlrd](https://xlrd.readthedocs.io/en/latest/): while this is not imported implicitely, it needs to be installed to read an `xlsx` file using `pd.read_excel`.
+- [Altair](https://altair-viz.github.io): all charts (except for the geographic map) displayed in the dashboard are built using Altair.
 
 
 ## Code Structure and Usage
