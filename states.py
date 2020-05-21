@@ -6,12 +6,12 @@ import streamlit as st
 from tabulate import tabulate
 
 
-def main():
+def main(df_sta, df_sta_cum):
 
     #df_ctr_cum = data.df_ctr_cum
     #df_ctr = data.df_ctr
-    df_sta = data.df_sta
-    df_sta_cum = data.df_sta_cum
+    #df_sta = data.df_sta
+    #df_sta_cum = data.df_sta_cum
     #df_cases = data.df_cases
     _width = data._width
     _height = data._height

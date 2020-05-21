@@ -7,6 +7,7 @@ import streamlit as st
 _width = 800
 _height = 500
 
+"""
 # read data
 # quick stats
 df_stats = pd.read_csv('data_stats.csv')
@@ -37,6 +38,7 @@ df_lkr_roll = \
                 var_name = 'category',\
                 value_name = 'Number')
 df_lkr_roll
+"""
 
 def longify_df_cum(df_cum,cat,sel):
     """ transform data frame with cumulative data for states or districts

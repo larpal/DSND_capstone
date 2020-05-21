@@ -5,17 +5,24 @@ import data_wrangling as data
 import streamlit as st
 import numpy as np
 
-def main():
+def main(df_lkr, df_cases_rolling, df_loc):
+
+    df_lkr_roll = \
+            pd.melt(df_cases_rolling, id_vars=['Meldedatum', 'Landkreis'],\
+                    value_vars = ['AnzahlFall100k'],\
+                    var_name = 'category',\
+                    value_name = 'Number')
+
     st.markdown('*Choose any number of districts in the sidebar.*')
     """
     df_ctr_cum = data.df_ctr_cum
     df_ctr = data.df_ctr
     df_sta = data.df_sta
     """
-    df_lkr_roll = data.df_lkr_roll
-    df_lkr = data.df_lkr
+    #df_lkr_roll = data.df_lkr_roll
+    #df_lkr = data.df_lkr
 
-    df_loc = data.df_cases_loc_long
+    #df_loc = data.df_cases_loc_long
 
     _width = data._width
     _height = data._height
@@ -25,6 +32,9 @@ def main():
 
     # chart displaying rolling sum of cases in the past week
     st.markdown('### Rolling sum of cases over past 7 days:')
+    st.markdown('*Normalized to number of cases per 100.000 inhabitants.'+\
+        ' The red line indicates 50 new cases per 100.000 inhabitants within '+\
+        'a week which is considered a threshold for further lockdown measures. *')
     line_data = pd.DataFrame({'a': [50]})
     # line at 50 cases
     chart_line = alt.Chart(line_data).mark_rule(strokeWidth=10).encode(y='a:Q',\
@@ -42,7 +52,7 @@ def main():
     st.write(chart_100k)
 
     st.markdown('### Daily cases since begin of the pandemic:')
-
+    st.markdown('*Bars are stacked on top of each other.*')
     c = alt.Chart(df_lkr.loc[df_lkr['Landkreis'].isin(lkr_sel)])\
         .mark_bar(point=True)\
         .encode(x=alt.X('monthdate(Meldedatum):O', title='Date'),\
