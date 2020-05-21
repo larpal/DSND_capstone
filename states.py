@@ -8,6 +8,7 @@ from tabulate import tabulate
 str_c = data.str_c
 str_d = data.str_d
 str_r = data.str_r
+str_date = data.str_date
 
 def main(df_sta, df_sta_cum):
     """
@@ -71,12 +72,12 @@ def main(df_sta, df_sta_cum):
 
     chart_sta_cum = alt.Chart(data.longify_df_cum(df_sta_cum, 'Bundesland',state_sel_cum))\
             .mark_area(point=True, opacity=0.5)\
-            .encode(x=alt.X('monthdate(Meldedatum):O', title='Date'),\
+            .encode(x=alt.X('monthdate('+str_date+'):O', title='Date'),\
                     y=alt.Y('mean(Number):Q',\
                             title='Cumulative Cases',\
                             stack=None),\
                     color='category',\
-                    tooltip=['monthdate(Meldedatum)','category','Number'])\
+                    tooltip=['monthdate('+str_date+')','category','Number'])\
             .properties(width=800, height=400, title='Number of cases in '+state_sel_cum)
     st.write(chart_sta_cum)
 
@@ -90,7 +91,7 @@ def main(df_sta, df_sta_cum):
         chart_sta_day = \
         alt.Chart(df_sta.loc[df_sta['Bundesland'].isin(states_sel)])\
             .mark_line(point=True)\
-            .encode(x=alt.X('monthdate(Meldedatum):O', title='Date'),\
+            .encode(x=alt.X('monthdate('+str_date+'):O', title='Date'),\
                     y=alt.Y('mean('+str_c+'):Q', title='Cumulative Cases'),\
                     color='Bundesland',\
                     tooltip=['Bundesland',str_c])\
@@ -100,7 +101,7 @@ def main(df_sta, df_sta_cum):
         #st.text('Numbers stacked on top.')
         chart_sta_day = alt.Chart(df_sta.loc[df_sta['Bundesland'].isin(states_sel)])\
             .mark_bar(point=True)\
-            .encode(x=alt.X('monthdate(Meldedatum):O', title='Date'),\
+            .encode(x=alt.X('monthdate('+str_date+'):O', title='Date'),\
                     y=alt.Y('mean('+str_c+'):Q', title='Cumulative Cases'),\
                     color='Bundesland',\
                     tooltip=['Bundesland',str_c])\

@@ -4,6 +4,8 @@ import altair as alt
 import data_wrangling as data
 import numpy as np
 
+str_date = data.str_date
+
 
 def main(df_stats, df_deaths_stats, df_ctr, df_ctr_cum):
     """
@@ -27,7 +29,8 @@ def main(df_stats, df_deaths_stats, df_ctr, df_ctr_cum):
     _height = data._height
     st.markdown('**All numbers and charts on this page are for whole Germany.**')
     # Overview
-    st.markdown('### Current stats for '+pd.Timestamp.today().strftime('%B %d, %Y')+':')
+    st.markdown('### Current stats for '+\
+                pd.Timestamp.today().strftime('%B %d, %Y')+':')
     st.table(df_stats)
 
     st.markdown('### Total number of deaths for different age groups:')
@@ -49,22 +52,26 @@ def main(df_stats, df_deaths_stats, df_ctr, df_ctr_cum):
         # logarithmic plot
         chart_cum_cases = alt.Chart(df_ctr_cum)\
             .mark_line(point=True)\
-            .encode(x=alt.X('monthdate(Meldedatum):O', title='Date'),\
-                    y=alt.Y('mean(Number):Q', title='Cumulative Reported Cases',\
+            .encode(x=alt.X('monthdate('+str_date+'):O', title='Date'),\
+                    y=alt.Y('mean(Number):Q', \
+                            title='Cumulative Reported Cases',\
                             scale=alt.Scale(type='log')), color='category',\
-                            tooltip=['monthdate(Meldedatum)','category','Number'])\
-            .properties(width=_width, height=_height, title='Log total cases in Germany')
+                            tooltip=['monthdate('+str_date+')',\
+                                        'category','Number'])\
+            .properties(width=_width, height=_height, \
+                        title='Log total cases in Germany')
     else:
         # linear plot
         chart_cum_cases = alt.Chart(df_ctr_cum)\
             .mark_area(point=False, opacity=0.6)\
-            .encode(x=alt.X('monthdate(Meldedatum):O', title='Date'),\
+            .encode(x=alt.X('monthdate('+str_date+'):O', title='Date'),\
                     y=alt.Y('mean(Number):Q',\
                             title='Cumulative Reported Cases',\
                             stack=None),\
                     color='category',\
-                    tooltip=['monthdate(Meldedatum)','category','Number'])\
-            .properties(width=_width, height=_height, title='Total cases in Germany')
+                    tooltip=['monthdate('+str_date+')','category','Number'])\
+            .properties(width=_width, height=_height, \
+                        title='Total cases in Germany')
 
     st.write(chart_cum_cases)
 
@@ -77,20 +84,20 @@ def main(df_stats, df_deaths_stats, df_ctr, df_ctr_cum):
         chart_daily_cases = \
         alt.Chart(df_ctr)\
             .mark_bar(point=True)\
-            .encode(x=alt.X('monthdate(Meldedatum):O', title='Date'),\
+            .encode(x=alt.X('monthdate('+str_date+'):O', title='Date'),\
                     y=alt.Y('mean(Number):Q', title='Reported Cases'),\
                     color='category',\
-                    tooltip=['monthdate(Meldedatum)','category','Number'])\
+                    tooltip=['monthdate('+str_date+')','category','Number'])\
             .properties(width=800, height=400, title='Daily cases in Germany')
     else:
         chart_daily_cases = \
         alt.Chart(df_ctr.loc[df_ctr['Number']>0])\
         .mark_line(point=True)\
-        .encode(x=alt.X('monthdate(Meldedatum):O', title='Date'),\
+        .encode(x=alt.X('monthdate('+str_date+'):O', title='Date'),\
                 y=alt.Y('mean(Number):Q', title='Reported Cases',\
                        scale=alt.Scale(type='log')),\
                 color='category',\
-                tooltip=['monthdate(Meldedatum)','category','Number'])\
+                tooltip=['monthdate('+str_date+')','category','Number'])\
         .properties(width=800, height=400, title='Log daily cases in Germany')
     st.write(chart_daily_cases)
 
@@ -124,7 +131,7 @@ def show_map(df_loc):
         map_data = df_loc[['lat','lon']].astype(float)
     elif map_navigation == 'Past 7 days':
         map_data = df_loc.loc[(pd.Timestamp.today() - \
-                                df_loc['Meldedatum']).dt.days < 7]\
+                                df_loc[str_date]).dt.days < 7]\
                                 [['lat','lon']].astype(float)
 
 

@@ -11,6 +11,7 @@ str_c = 'cases'
 str_d = 'deaths'
 str_r = 'recovered'
 str_dstrct = 'district'
+str_date = 'date_reported'
 """
 # read data
 # quick stats
@@ -54,7 +55,7 @@ def longify_df_cum(df_cum,cat,sel):
         sel (str): specific Bundesland or Landkreis
     """
     tmp = df_cum.loc[df_cum[cat]==sel].drop(columns=[cat])
-    tmp = pd.melt(tmp, id_vars = ['Meldedatum'], var_name= 'category',\
+    tmp = pd.melt(tmp, id_vars = [str_date], var_name= 'category',\
         value_vars = [str_c,str_d,str_r],\
        value_name = 'Number')
     return tmp

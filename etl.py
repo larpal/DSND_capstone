@@ -7,19 +7,20 @@ str_c = data.str_c
 str_d = data.str_d
 str_r = data.str_r
 str_dstrct = data.str_dstrct
+str_date = data.str_date
 
 @st.cache
 def etl_main():
     # get Covid data from RKI webpage
     df_rki = pd.read_csv('https://www.arcgis.com/sharing/rest/content/items/f10774f1c63e40168479a1feb6c7ca74/data')
-    df_rki['Meldedatum'] = pd.to_datetime(df_rki['Meldedatum'], format='%Y/%m/%d')
 
     df_rki.rename(columns={'AnzahlFall': str_c,\
                             'AnzahlTodesfall':str_d,\
                             'AnzahlGenesen':str_r,\
-                            'Landkreis':str_dstrct},\
+                            'Landkreis':str_dstrct,\
+                            'Meldedatum':str_date},\
                             inplace = True)
-
+    df_rki[str_date] = pd.to_datetime(df_rki[str_date], format='%Y/%m/%d')
     # compute basic stats
     n_cases = df_rki.loc[df_rki['NeuerFall'].isin([0,1])][str_c].sum()
     n_cases_new = \
@@ -84,27 +85,27 @@ def etl_main():
     df_population['IdLandkreis'] = df_population['IdLandkreis'].astype(int)
 
     # create data frame  with cases per 100k inhabitants in the last 7 days
-    df_to_roll = df_cases.copy()[['Meldedatum',str_c,'IdLandkreis']].\
-        groupby(['Meldedatum','IdLandkreis']).sum().reset_index()
-    df_to_roll.sort_values(by='Meldedatum',inplace = True)
+    df_to_roll = df_cases.copy()[[str_date,str_c,'IdLandkreis']].\
+        groupby([str_date,'IdLandkreis']).sum().reset_index()
+    df_to_roll.sort_values(by=str_date,inplace = True)
 
     # pad zero rows for days on which no new cases were reported
     lkr_all = set(df_to_roll['IdLandkreis'].unique())
     # sweep over all days in the data set
-    for date in pd.date_range(df_to_roll['Meldedatum'].min(), \
-                                df_to_roll['Meldedatum'].max(), freq = '1D'):
+    for date in pd.date_range(df_to_roll[str_date].min(), \
+                                df_to_roll[str_date].max(), freq = '1D'):
         # add zero rows for all districts that didn't report cases on that day
         for id_lkr in lkr_all - \
-            set(df_to_roll.loc[df_to_roll['Meldedatum'] == date ]['IdLandkreis']):
+            set(df_to_roll.loc[df_to_roll[str_date] == date ]['IdLandkreis']):
             df_to_roll = \
-                df_to_roll.append({'Meldedatum':date, \
+                df_to_roll.append({str_date:date, \
                                    'IdLandkreis': id_lkr,\
                                    str_c:0}, \
                                    ignore_index=True)
         print('fixed date',date)
 
-    df_to_roll.sort_values(by='Meldedatum',inplace = True)
-    df_to_roll = df_to_roll.set_index('Meldedatum').\
+    df_to_roll.sort_values(by=str_date,inplace = True)
+    df_to_roll = df_to_roll.set_index(str_date).\
                     groupby('IdLandkreis').rolling('7d').sum()
     df_to_roll = df_to_roll.drop(columns = ['IdLandkreis']).reset_index()
 
@@ -129,21 +130,21 @@ def etl_main():
     Transform data to long data format for better plotting using Altair
     """
     # Country
-    df_ctr_cases = df_cases.groupby(['Meldedatum'])\
+    df_ctr_cases = df_cases.groupby([str_date])\
                             .sum()[[str_c]]
-    df_ctr_deaths = df_deaths.groupby(['Meldedatum'])\
+    df_ctr_deaths = df_deaths.groupby([str_date])\
                             .sum()[[str_d]]
-    df_ctr_recovered = df_recovered.groupby(['Meldedatum'])\
+    df_ctr_recovered = df_recovered.groupby([str_date])\
                             .sum()[[str_r]]
-    df_ctr_cases = pd.melt(df_ctr_cases.reset_index(), id_vars=['Meldedatum'],\
+    df_ctr_cases = pd.melt(df_ctr_cases.reset_index(), id_vars=[str_date],\
                                                        value_vars = [str_c],\
                                                        var_name = 'category',\
                                                        value_name = 'Number')
-    df_ctr_deaths = pd.melt(df_ctr_deaths.reset_index(), id_vars=['Meldedatum'],\
+    df_ctr_deaths = pd.melt(df_ctr_deaths.reset_index(), id_vars=[str_date],\
                                                        value_vars = [str_d],\
                                                        var_name = 'category',\
                                                        value_name = 'Number')
-    df_ctr_recovered = pd.melt(df_ctr_recovered.reset_index(), id_vars=['Meldedatum'],\
+    df_ctr_recovered = pd.melt(df_ctr_recovered.reset_index(), id_vars=[str_date],\
                                                        value_vars = [str_r],\
                                                        var_name = 'category',\
                                                        value_name = 'Number')
@@ -152,19 +153,19 @@ def etl_main():
             .apply(lambda x: 'case' if x == str_c else\
                                   ('death' if x == str_d else 'recovered'))
     # cumulative cases
-    df_ctr_cum = df_ctr.copy().sort_values(by=['Meldedatum','category'])
+    df_ctr_cum = df_ctr.copy().sort_values(by=[str_date,'category'])
     for el in list(df_ctr_cum['category'].unique()):
         df_ctr_cum.loc[df_ctr_cum['category']== el,'Number' ] = \
             np.cumsum(df_ctr_cum.loc[df_ctr_cum['category']== el,'Number' ])
     """States"""
     # daily cases
-    df_sta = pd.concat([df_cases.groupby(['Meldedatum','Bundesland']).sum().reset_index()\
-                    [['Meldedatum','Bundesland',str_c]],\
-                df_deaths.groupby(['Meldedatum','Bundesland']).sum().reset_index()\
-                                [['Meldedatum','Bundesland',str_d]],\
-                df_recovered.groupby(['Meldedatum','Bundesland']).sum().reset_index()\
-                                [['Meldedatum','Bundesland',str_r]]])
-    df_sta = df_sta.fillna(0).groupby(['Meldedatum','Bundesland']).sum().reset_index()
+    df_sta = pd.concat([df_cases.groupby([str_date,'Bundesland']).sum().reset_index()\
+                    [[str_date,'Bundesland',str_c]],\
+                df_deaths.groupby([str_date,'Bundesland']).sum().reset_index()\
+                                [[str_date,'Bundesland',str_d]],\
+                df_recovered.groupby([str_date,'Bundesland']).sum().reset_index()\
+                                [[str_date,'Bundesland',str_r]]])
+    df_sta = df_sta.fillna(0).groupby([str_date,'Bundesland']).sum().reset_index()
     df_sta[[str_c,str_d,str_r]] = df_sta[[str_c,str_d,str_r]].astype('int64')
 
     # cumulative
@@ -174,13 +175,13 @@ def etl_main():
             df_sta_cum.loc[df_sta_cum['Bundesland']==state,col] = \
             np.cumsum(df_sta_cum.loc[df_sta_cum['Bundesland']==state,col])
     """Districts"""
-    df_lkr = pd.concat([df_cases.groupby(['Meldedatum',str_dstrct]).sum().\
-            reset_index()[['Meldedatum',str_dstrct,str_c]],\
-        df_deaths.groupby(['Meldedatum',str_dstrct]).sum().\
-            reset_index()[['Meldedatum',str_dstrct,str_d]],\
-        df_recovered.groupby(['Meldedatum',str_dstrct]).sum().\
-            reset_index()[['Meldedatum',str_dstrct,str_r]]])
-    df_lkr = df_lkr.fillna(0).groupby(['Meldedatum',str_dstrct]).sum().reset_index()
+    df_lkr = pd.concat([df_cases.groupby([str_date,str_dstrct]).sum().\
+            reset_index()[[str_date,str_dstrct,str_c]],\
+        df_deaths.groupby([str_date,str_dstrct]).sum().\
+            reset_index()[[str_date,str_dstrct,str_d]],\
+        df_recovered.groupby([str_date,str_dstrct]).sum().\
+            reset_index()[[str_date,str_dstrct,str_r]]])
+    df_lkr = df_lkr.fillna(0).groupby([str_date,str_dstrct]).sum().reset_index()
     df_lkr[[str_c,str_d,str_r]] = df_lkr[[str_c,str_d,str_r]].astype('int64')
 
     df_lkr_cum = df_lkr.copy()
@@ -207,7 +208,7 @@ def etl_main():
         inplace =True)
     df_cases_loc = pd.merge(df_cases, geo_data, \
             on='IdLandkreis')\
-            [['IdLandkreis','Meldedatum',str_c,'lat','lon']]
+            [['IdLandkreis',str_date,str_c,'lat','lon']]
     # normalize to cases per 100k inhabitants
     df_cases_loc = pd.merge(df_cases_loc,df_population[['IdLandkreis','pop_tot']],on='IdLandkreis')
     df_cases_loc[str_c] = df_cases_loc[str_c]/df_cases_loc['pop_tot']*10**5
@@ -228,7 +229,7 @@ def etl_main():
 
     # data frame with only past week's cases
     df_cases_7d = df_cases_loc_long.loc[(pd.Timestamp.today() - \
-                                    df_cases_loc_long['Meldedatum']).dt.days < 7]
+                                    df_cases_loc_long[str_date]).dt.days < 7]
     """
     # save data
     df_deaths_stats.to_csv('data_death_stats.csv', index=False)
