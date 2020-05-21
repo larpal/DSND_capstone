@@ -6,7 +6,10 @@ import streamlit as st
 # set plot properties
 _width = 800
 _height = 500
-
+# set naming properties
+str_c = 'cases'
+str_d = 'deaths'
+str_r = 'recovered'
 """
 # read data
 # quick stats
@@ -51,7 +54,7 @@ def longify_df_cum(df_cum,cat,sel):
     """
     tmp = df_cum.loc[df_cum[cat]==sel].drop(columns=[cat])
     tmp = pd.melt(tmp, id_vars = ['Meldedatum'], var_name= 'category',\
-        value_vars = ['AnzahlFall','AnzahlTodesfall','AnzahlGenesen'],\
+        value_vars = [str_c,str_d,str_r],\
        value_name = 'Number')
     return tmp
 

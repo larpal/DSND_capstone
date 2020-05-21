@@ -5,27 +5,25 @@ import data_wrangling as data
 import streamlit as st
 import numpy as np
 
+str_c = data.str_c
+str_d = data.str_d
+str_r = data.str_r
+
 def main(df_lkr, df_cases_rolling, df_loc):
+
+    # get plot properties
+    _width = data._width
+    _height = data._height
 
     df_lkr_roll = \
             pd.melt(df_cases_rolling, id_vars=['Meldedatum', 'Landkreis'],\
                     value_vars = ['AnzahlFall100k'],\
                     var_name = 'category',\
-                    value_name = 'Number')
+                    value_name = 'cases')
 
     st.markdown('*Choose any number of districts in the sidebar.*')
-    """
-    df_ctr_cum = data.df_ctr_cum
-    df_ctr = data.df_ctr
-    df_sta = data.df_sta
-    """
-    #df_lkr_roll = data.df_lkr_roll
-    #df_lkr = data.df_lkr
 
-    #df_loc = data.df_cases_loc_long
 
-    _width = data._width
-    _height = data._height
 
     lkr_tp = tuple(sorted(list(df_lkr['Landkreis'].unique())))
     lkr_sel = st.sidebar.multiselect('Choose Districts',lkr_tp,['SK Hamburg'])
@@ -44,9 +42,9 @@ def main(df_lkr, df_cases_rolling, df_loc):
     alt.Chart(df_lkr_roll.loc[df_lkr_roll['Landkreis'].isin(lkr_sel)])\
             .mark_line(point=True)\
             .encode(x=alt.X('monthdate(Meldedatum):O', title='Date'),\
-                    y=alt.Y('mean(Number):Q', title='Cases'),\
+                    y=alt.Y('mean(cases):Q', title='Cases'),\
                     color='Landkreis',\
-                   tooltip = ['Landkreis','Meldedatum','Number'])
+                   tooltip = ['Landkreis','Meldedatum','cases'])
     chart_100k = (chart_cases_per_100k+chart_line).properties\
     (width=800, height=400, title='Rolling 7-day sum of cases per 100k')
     st.write(chart_100k)
@@ -56,9 +54,9 @@ def main(df_lkr, df_cases_rolling, df_loc):
     c = alt.Chart(df_lkr.loc[df_lkr['Landkreis'].isin(lkr_sel)])\
         .mark_bar(point=True)\
         .encode(x=alt.X('monthdate(Meldedatum):O', title='Date'),\
-                y=alt.Y('mean(AnzahlFall):Q', title='Cumulative Cases'),\
+                y=alt.Y('mean('+str_c+'):Q', title='Cumulative Cases'),\
                 color='Landkreis',\
-                tooltip=['Landkreis','AnzahlFall'])\
+                tooltip=['Landkreis',str_c])\
         .properties(width=800, height=400, title='Number of Cases')\
         .interactive()
     st.write(c)
