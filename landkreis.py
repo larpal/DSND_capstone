@@ -2,8 +2,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 import data_wrangling as data
-import streamlit as st
-import numpy as np
+
 
 str_c = data.str_c
 str_d = data.str_d
@@ -11,8 +10,20 @@ str_r = data.str_r
 str_dstrct = data.str_dstrct
 str_date = data.str_date
 
-def main(df_lkr, df_cases_rolling, df_loc):
+def main(df_lkr, df_cases_rolling):
+    """
+    Displays page showing current Covid-19 data for the different districts
+    of Germany. Includes the following elements for a chosen number of districts:
+        - Line chart showing rolling sum of the past 7 days' cases per 100k
+        inhabitants
+        - Stacked bar plot showing the daily number of reported cases
 
+    Args: all of the below data frames are outputs of etl_main in the etl
+    module. See this module for reference.
+        - df_lkr: data frame containing stats for current day
+        - df_cases_rolling: data frame containing number of deaths by age group
+    Returns: None
+    """
     # get plot properties
     _width = data._width
     _height = data._height
@@ -53,7 +64,7 @@ def main(df_lkr, df_cases_rolling, df_loc):
 
     st.markdown('### Daily cases since begin of the pandemic:')
     st.markdown('*Bars are stacked on top of each other.*')
-    c = alt.Chart(df_lkr.loc[df_lkr[str_dstrct].isin(lkr_sel)])\
+    chart_cases_day = alt.Chart(df_lkr.loc[df_lkr[str_dstrct].isin(lkr_sel)])\
         .mark_bar(point=True)\
         .encode(x=alt.X('monthdate('+str_date+'):O', title='Date'),\
                 y=alt.Y('mean('+str_c+'):Q', title='Cumulative Cases'),\
@@ -61,6 +72,4 @@ def main(df_lkr, df_cases_rolling, df_loc):
                 tooltip=[str_dstrct,str_c])\
         .properties(width=800, height=400, title='Number of Cases')\
         .interactive()
-    st.write(c)
-    #st.write(df_loc[['lat','lon']].head(1000))
-    #st.map(df_loc[['lat','lon']].head(10000))
+    st.write(chart_cases_day)

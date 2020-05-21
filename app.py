@@ -1,17 +1,12 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
-import altair as alt
 import country
 import states
 import landkreis
-import data_wrangling
-from tabulate import tabulate
 from etl import etl_main
 
 
 
-st.title('COVID-19 Dashboard for Germany')
+st.title('Covid-19 Dashboard for Germany')
 
 # run ETL pipeline
 # note that the data is updated once per day, so the data pipeline is
@@ -23,9 +18,9 @@ df_deaths_stats, df_stats, df_cases_roll,\
 
 # navigation sidebar
 nav_country_map = 'Country Map'
-nav_country = 'Country Stats'
-nav_states = 'States'
-nav_districts = 'Districts'
+nav_country = 'Country Data'
+nav_states = 'State Data'
+nav_districts = 'District Data'
 site_navigation = \
     st.sidebar.radio('Site Navigation',\
                             (nav_country,nav_country_map,nav_states,nav_districts))
@@ -38,4 +33,4 @@ elif site_navigation == nav_country_map:
 elif site_navigation == nav_states:
     states.main(df_sta, df_sta_cum)
 elif site_navigation == nav_districts:
-    landkreis.main(df_lkr, df_cases_roll, df_cases_loc_long)
+    landkreis.main(df_lkr, df_cases_roll)

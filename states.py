@@ -3,7 +3,6 @@ import pandas as pd
 import altair as alt
 import data_wrangling as data
 import streamlit as st
-from tabulate import tabulate
 
 str_c = data.str_c
 str_d = data.str_d

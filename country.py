@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 import data_wrangling as data
-import numpy as np
 
 str_date = data.str_date
 
