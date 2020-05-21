@@ -11,17 +11,42 @@ str_date = data.str_date
 
 @st.cache
 def etl_main():
-    # get Covid data from RKI webpage
+    """
+    Gathers data for the Covid-19 dashboard and returns relevant data frames.
+    For further reference, it is easiest to jump to the notebook 'ETL' which
+    contains this code broken up into smaller pieces.
+    Args: None
+    Returns: (all data frames)
+        df_deaths_stats: total deaths by age group
+        df_stats: current stats of total or new cases/deaths/recovered
+        df_cases_roll: rolling 7-day sum of cases by district
+        df_ctr: daily cases/deaths/recovered by date for Germany
+        df_ctr_cum: total cases/deaths/recovered by date for Germany
+        df_sta: daily cases/deaths/recovered by date for each state
+        df_sta_cum: total cases/deaths/recovered by date for each state
+        df_lkr: daily cases/deaths/recovered by date for each district
+        df_lkr_cum: total cases/deaths/recovered by date for each district
+        df_cases_loc_long: geographic data of district for each reported case
+    """
+    # pull Covid-19 data from Robert-Koch-Institute webpage
     df_rki = pd.read_csv('https://www.arcgis.com/sharing/rest/content/items/f10774f1c63e40168479a1feb6c7ca74/data')
 
+    # rename relevant columns to English
     df_rki.rename(columns={'AnzahlFall': str_c,\
                             'AnzahlTodesfall':str_d,\
                             'AnzahlGenesen':str_r,\
                             'Landkreis':str_dstrct,\
                             'Meldedatum':str_date},\
                             inplace = True)
+    # convert date to datetime
     df_rki[str_date] = pd.to_datetime(df_rki[str_date], format='%Y/%m/%d')
-    # compute basic stats
+
+    #####################
+    # compute basic stats for the first table based on the reporting
+    # scheme provided with the data set, as given at
+    # https://www.arcgis.com/home/item.html?id=f10774f1c63e40168479a1feb6c7ca74
+    # (in German).
+
     n_cases = df_rki.loc[df_rki['NeuerFall'].isin([0,1])][str_c].sum()
     n_cases_new = \
         df_rki.loc[df_rki['NeuerFall'].isin([-1,1])][str_c].sum()
@@ -36,6 +61,7 @@ def etl_main():
     n_active = n_cases - n_deaths - n_recovered
     n_active_new = n_cases_new - n_deaths_new - n_recovered_new
 
+    # create data frame with total and new cases/deaths/recovered/active
     df_stats = pd.DataFrame({' ':['Total','Today'],\
                         'Cases':[n_cases, n_cases_new],\
                         'Recovered':[n_recovered, n_recovered_new],\
@@ -43,11 +69,12 @@ def etl_main():
                         'Unresolved':[n_active, n_active_new]})
     df_stats.set_index(' ', inplace=True)
 
-    # separate cases, deaths and recovered cases
+    # for better data handling, separate cases, deaths and recovered cases
     df_cases = df_rki.loc[df_rki['NeuerFall'].isin([0,1])].copy()
     df_deaths = df_rki.loc[df_rki['NeuerTodesfall'].isin([0,1])].copy()
     df_recovered = df_rki.loc[df_rki['NeuGenesen'].isin([0,1])].copy()
 
+    # one-hot encoding of deaths by age group for age distribution bar chart
     df_deaths_stats = pd.get_dummies(df_deaths['Altersgruppe']).sum().reset_index()
     df_deaths_stats.rename(columns={'index':'Age',0:'Count'}, inplace=True)
 
@@ -65,15 +92,16 @@ def etl_main():
          'NeuerTodesfall','Altersgruppe2'], \
          inplace=True)
 
-    # merge Berlin cases since we currently don't have population data for the individual districts
-    df_cases.loc[df_cases['IdLandkreis'].isin(np.arange(11000,11013,1)),'IdLandkreis'] = 11000
-    df_cases.loc[df_cases['IdLandkreis'].isin(np.arange(11000,11013,1)),str_dstrct] = 'SK Berlin'
+    # merge Berlin cases since we currently don't have population data for the
+    # individual districts
+    df_cases.loc[df_cases['IdLandkreis'].\
+            isin(np.arange(11000,11013,1)),'IdLandkreis'] = 11000
+    df_cases.loc[df_cases['IdLandkreis'].\
+            isin(np.arange(11000,11013,1)),str_dstrct] = 'SK Berlin'
     df_cases.drop(columns = ['Datenstand'], inplace=True)
 
-    # one-hot encode age groups
-    df_cases = pd.concat([df_cases,pd.get_dummies(df_cases['Altersgruppe'], prefix='age')],axis=1).drop(columns='Altersgruppe')
-    df_cases.head()
 
+    # pull population data from excel sheet
     # needs packae xlrd
     df_population = pd.read_excel('./data/04-kreise.xlsx', \
         sheet_name='Kreisfreie Städte u. Landkreise',skiprows=6, skipfooter=16)
@@ -81,7 +109,8 @@ def etl_main():
         ['IdLandkreis', 'Bezeichnung','Name','NUTS3',\
          'area','pop_tot','pop_male','pop_female','pop_per_sqkm2']
     df_population.dropna(axis=0, how='any', inplace=True)
-    # set integer IdLandkreis
+
+    # convert district id IdLandkreis to integer
     df_population['IdLandkreis'] = df_population['IdLandkreis'].astype(int)
 
     # create data frame  with cases per 100k inhabitants in the last 7 days
@@ -108,12 +137,13 @@ def etl_main():
     df_to_roll = df_to_roll.set_index(str_date).\
                     groupby('IdLandkreis').rolling('7d').sum()
     df_to_roll = df_to_roll.drop(columns = ['IdLandkreis']).reset_index()
-
+    # merge data frame containing rolling sum with population data
     df_cases_roll = pd.merge(df_to_roll, df_population,on='IdLandkreis')
+    # add column for cases per 100k and compute normalized cases
     df_cases_roll.insert(3,'AnzahlFall100k',0)
     df_cases_roll['AnzahlFall100k'] = \
         df_cases_roll[str_c]/df_cases_roll['pop_tot']*(10**5)
-    df_cases_roll.loc[df_cases_roll['IdLandkreis']==5558].tail(25)
+
 
     # set district ids to district names
     df_cases_roll[str_dstrct] = df_cases_roll['IdLandkreis']
@@ -157,7 +187,7 @@ def etl_main():
     for el in list(df_ctr_cum['category'].unique()):
         df_ctr_cum.loc[df_ctr_cum['category']== el,'Number' ] = \
             np.cumsum(df_ctr_cum.loc[df_ctr_cum['category']== el,'Number' ])
-    """States"""
+    ##### STATES ####
     # daily cases
     df_sta = pd.concat([df_cases.groupby([str_date,'Bundesland']).sum().reset_index()\
                     [[str_date,'Bundesland',str_c]],\
@@ -174,7 +204,8 @@ def etl_main():
         for col in [str_c,str_d,str_r]:
             df_sta_cum.loc[df_sta_cum['Bundesland']==state,col] = \
             np.cumsum(df_sta_cum.loc[df_sta_cum['Bundesland']==state,col])
-    """Districts"""
+
+    # districts
     df_lkr = pd.concat([df_cases.groupby([str_date,str_dstrct]).sum().\
             reset_index()[[str_date,str_dstrct,str_c]],\
         df_deaths.groupby([str_date,str_dstrct]).sum().\
@@ -215,7 +246,7 @@ def etl_main():
     df_cases_loc[str_c] = df_cases_loc[str_c].apply(np.round).astype(int)
     #
     """
-    When plotting the map, we only use the geological coordinates of the reported
+    When plotting the map, we only use the geographic coordinates of the reported
     case. Currently, each row contains information about how many cases were
     reported. Thus, we create a new row for every reported cases and copy the
     coordinates of the district.
@@ -230,23 +261,7 @@ def etl_main():
     # data frame with only past week's cases
     df_cases_7d = df_cases_loc_long.loc[(pd.Timestamp.today() - \
                                     df_cases_loc_long[str_date]).dt.days < 7]
-    """
-    # save data
-    df_deaths_stats.to_csv('data_death_stats.csv', index=False)
-    df_stats.to_csv('data_stats.csv')
-    df_cases_roll.to_csv('data_cases_rolling.csv', index=False)
-    # country data
-    df_ctr.to_csv('data_ctr_long.csv', index=False)
-    df_ctr_cum.to_csv('data_ctr_cum_long.csv', index=False)
-    # state data
-    df_sta.to_csv('data_sta_long.csv', index=False)
-    df_sta_cum.to_csv('data_sta_cum_long.csv', index=False)
-    # district data
-    df_lkr.to_csv('data_lkr_long.csv', index=False)
-    df_lkr_cum.to_csv('data_lkr_cum_long.csv', index=False)
-    # location case data
-    df_cases_loc_long.to_csv('data_loc_long.csv', index=False)
-    """
+
     return df_deaths_stats, df_stats, df_cases_roll,\
             df_ctr, df_ctr_cum, df_sta, df_sta_cum,\
             df_lkr, df_lkr_cum, df_cases_loc_long
