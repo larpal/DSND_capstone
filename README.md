@@ -13,6 +13,10 @@ the Covid-19 pandemic in Germany. The main goals of the project were:
 - Combine data sources to provide information about the geographic distribution of Covid-19 cases
 - Present the information in a useful and pretty way.
 
+The metrics I focused on were:
+- Number of total cases over time on a country, state and district level
+- Number of daily cases and in particular how this changes over time
+- Number of cases per 100.000 inhabitants in a 7 day time window. This is currently one of the main metrics to decide about relaxing or tightening social distancing measures.
 
 My dashboard consists of four pages containing several different types of visualizations:
 - Country level information:
@@ -62,7 +66,7 @@ the number of cases per 100k inhabitants on a map.
 
 ## Libraries
 The dashboard is built using the following libraries:
-- [Streamlit](https://www.streamlit.io): to run the app, use `streamlit run app.py`
+- [Streamlit](https://www.streamlit.io): provides the main infrastructure of the app
 - [Pandas](https://pandas.pydata.org)
 - [Numpy](https://numpy.org)
 - [xlrd](https://xlrd.readthedocs.io/en/latest/): while this is not imported implicitely, it needs to be installed to read an `xlsx` file using `pd.read_excel`.
@@ -73,8 +77,8 @@ The dashboard is built using the following libraries:
 ```
 
 |-- data
-|   |-- 04-kreise.xlsx
-|   |-- landkreise-in-germany.csv
+|   |-- 04-kreise.xlsx  # population data
+|   |-- landkreise-in-germany.csv  # location data
 |-- app.py              # main file to run app
 |-- country.py          # functions to create country level visualizations
 |-- data_wrangling.py   # helper functions
@@ -83,7 +87,7 @@ The dashboard is built using the following libraries:
 |-- states.py           # functions to create state level visualizations
 ```
 
-To run the app, simply use `streamlit run app.py`. Note that the ETL pipeline is run once when the app is started which may take a few minutes. The data is then cached inside the app (using `st.cache`) and only needs to be updated once per day.
+To run the app, simply use `streamlit run app.py`. Note that the ETL pipeline is run once when the app is started which may take a few minutes. The data is then cached inside the app (using `st.cache`) and only needs to be updated once per day or when the app is restarted.
 
 
 ## Data Processing
@@ -95,3 +99,7 @@ The data preprocessing is done in the `etl` module via the `etl_main` function. 
 There are I am planning to improve, such as:
 - deploy the app on Heroku
 - Add more interactive information to the map
+- Refactor the ETL pipeline into pieces that are easier to digest.
+
+## Licensing, Authors, and Acknowledgements
+I am grateful to the providors of the data sets mentioned above. 
