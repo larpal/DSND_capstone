@@ -15,7 +15,8 @@
 This project was done within the framework of the [Data Science Nanodegree](https://www.udacity.com/course/data-scientist-nanodegree--nd025) program offered by Udacity. This readme serves both as a project description and as information on how to use the code.
 
 In this project, I created a dashboard displaying relevant information about
-the Covid-19 pandemic in Germany. My personal goal was to create a dashboard that my family members can use in order to get a reasonable overview about the current state
+the Covid-19 pandemic in Germany. The app is deployed on Heroku and an be accessed [here](https://pacific-savannah-97681.herokuapp.com).
+My personal goal was to create a dashboard that my family members can use in order to get a reasonable overview about the current state
 of the pandemic both in the whole country but also within their area. Thus, I tried to create a dashboard that is pretty and easy to understand but still presents quite a large amount of information.
 
 
@@ -140,7 +141,7 @@ In this project, I created a dashboard to visualize the current Covid-19 situati
 I found that Streamlit is very well suited for such dashboards. In particular, I think that this is a great tool to build pretty dashboards very quickly. Further, I feel that Altair is a great tool to create beautiful and interactive charts.
 
 Once the time allows, there are I am planning to improve, such as:
-- Deploy the app on Heroku.
+- ~Deploy the app on Heroku.~ *(Update June 14: deployed [here](https://pacific-savannah-97681.herokuapp.com))*
 - Add more interactive information to the map. I was impressed by how easy it is to add a map and overlay it with data. Next, I would like to add the relevant information such as district and cases that is displayed when hovering over a hexagon.
 - Speed up the ETL pipeline: the pipeline currently takes a few minutes to run which has to be performed once per day when the new data is added. I am confident that this can be sped up significantly.
 - refactor the ETL pipeline into pieces that are easier to digest
