@@ -10,7 +10,7 @@ str_r = data.str_r
 str_dstrct = data.str_dstrct
 str_date = data.str_date
 
-@st.cache(ttl=60*60*12)
+@st.cache
 def etl_main():
     """
     Gathers data for the Covid-19 dashboard and returns relevant data frames.
