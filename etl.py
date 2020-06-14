@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import streamlit as st
+import xlrd
 import data_wrangling as data
 
 str_c = data.str_c
