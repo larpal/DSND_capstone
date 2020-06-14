@@ -4,6 +4,9 @@ import altair as alt
 import data_wrangling as data
 
 str_date = data.str_date
+str_c = data.str_c
+str_d = data.str_d
+str_r = data.str_r
 
 
 def main(df_stats, df_deaths_stats, df_ctr, df_ctr_cum):
@@ -26,7 +29,7 @@ def main(df_stats, df_deaths_stats, df_ctr, df_ctr_cum):
     # get plot properties
     _width = data._width
     _height = data._height
-    st.markdown('**All numbers and charts on this page are for whole Germany.**')
+    st.markdown('**All numbers and charts on this page are for Germany as a whole.**')
     # Overview
     st.markdown('### Current stats for '+\
                 pd.Timestamp.today().strftime('%B %d, %Y')+':')
@@ -75,6 +78,31 @@ def main(df_stats, df_deaths_stats, df_ctr, df_ctr_cum):
     st.write(chart_cum_cases)
 
 
+    #### Add predictions ####
+    st.markdown('### Current trend with predictions:')
+    #st.write(data.predict_days(df_ctr_cum, 14, 3, str_c))
+    df_predicted = pd.concat([data.predict_days(df_ctr_cum, 14, 3, str_c),\
+                          data.predict_days(df_ctr_cum, 14, 3, str_d),\
+                          data.predict_days(df_ctr_cum, 14, 3, str_r)])
+    chart_cum_cases1 = alt.Chart(df_ctr_cum.iloc[-3*14:])\
+            .mark_line(point=True)\
+            .encode(x=alt.X('monthdate('+str_date+'):O', title='Date'),\
+                    y=alt.Y('mean(Number):Q', \
+                            title='Cumulative Reported Cases'), color='category',\
+                            tooltip=['monthdate('+str_date+')',\
+                                        'category','Number'])\
+
+    chart_predictions = alt.Chart(df_predicted)\
+            .mark_point()\
+            .encode(x=alt.X('monthdate('+'date'+'):O'),\
+                    y=alt.Y('predictions:Q'), color='category',\
+                            tooltip=['monthdate('+'date'+')',\
+                                        'predictions'])
+    chart_cum_pred = (chart_cum_cases1+chart_predictions)\
+                .properties(width=_width, height=_height, \
+                    title='Recent days and 3-day ahead predictions')
+
+    st.write(chart_cum_pred)
     # Stacked bar chart showing daily cases
     st.markdown('### Daily cases since begin of the pandemic:')
     toggle_log_daily_chart = st.checkbox('Logarithmic daily cases')

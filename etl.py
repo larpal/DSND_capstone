@@ -180,8 +180,8 @@ def etl_main():
                                                        value_name = 'Number')
     df_ctr = pd.concat([df_ctr_cases,df_ctr_deaths,df_ctr_recovered], axis = 0)
     df_ctr['category'] = df_ctr['category']\
-            .apply(lambda x: 'case' if x == str_c else\
-                                  ('death' if x == str_d else 'recovered'))
+            .apply(lambda x: str_c if x == str_c else\
+                                  (str_d if x == str_d else str_r))
     # cumulative cases
     df_ctr_cum = df_ctr.copy().sort_values(by=[str_date,'category'])
     for el in list(df_ctr_cum['category'].unique()):
