@@ -162,30 +162,7 @@ def show_map(df_loc):
                                 df_loc[str_date]).dt.days < 7]\
                                 [['lat','lon']].astype(float)
 
-    """
-    # display map
-    st.deck_gl_chart(
-    viewport={
-        'latitude': 50.32,
-         'longitude': 9.21,
-         'zoom': 4,
-        'pitch': 40,
-        },
-    layers=[{
-        'type': 'HexagonLayer',
-        'data': map_data,
-        'radius': 10000,
-        'elevationScale': 4,
-        'elevationRange': [0, 5000],
-        'pickable': True,
-        'extruded': True,
-        }
-        ,{
-        'type': 'ScatterplotLayer',
-            'data': map_data,
-            }
-        ])
-    """
+
     layer = pdk.Layer(
     "HexagonLayer",\
     map_data,\
