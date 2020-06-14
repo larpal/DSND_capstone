@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 import data_wrangling as data
+import pydeck as pdk
 
 str_date = data.str_date
 str_c = data.str_c
@@ -161,7 +162,7 @@ def show_map(df_loc):
                                 df_loc[str_date]).dt.days < 7]\
                                 [['lat','lon']].astype(float)
 
-
+    """
     # display map
     st.deck_gl_chart(
     viewport={
@@ -184,3 +185,22 @@ def show_map(df_loc):
             'data': map_data,
             }
         ])
+    """
+    layer = pdk.Layer(
+    "HexagonLayer",\
+    map_data,\
+    get_position=["lon", "lat"],\
+    auto_highlight=True,\
+    elevation_scale=4,\
+    radius= 10000,\
+    pickable=True,\
+    elevation_range=[0, 5000],\
+    extruded=True,\
+    coverage=1,\
+    )
+    view_state = pdk.ViewState(
+    longitude=9.21, latitude=50.32, \
+    zoom=4, pitch=40,
+    )
+
+    st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=view_state))
